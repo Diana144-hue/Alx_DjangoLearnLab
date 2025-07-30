@@ -2,7 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.http import HttpResponse
-from .models import Book, Library
+from .models import Book
+from .models import Library
 from django.views.generic import DetailView
 
 # function-based view
