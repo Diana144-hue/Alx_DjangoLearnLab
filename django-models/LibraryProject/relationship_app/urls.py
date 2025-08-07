@@ -1,11 +1,20 @@
 from django.template import Library
 from django.urls import path
-from .views import list_books, LibraryDetailView, register_view, login_view, logout_view
+from .views import list_books, LibraryDetailView
+from django.contrib.auth.views import LoginView, LogoutView
+from . import views
+
 
 urlpatterns = [
-    path('register/', register_view, name='register'),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
+    # Registration view (custom)
+    path('register/', views.register, name='register'),  
+
+    # Login view (built-in)
+    path('login/', LoginView.as_view(template_name='relationship_app/login.html'), name='login'),
+
+    # Logout view (built-in)
+    path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
+
     path('books/', list_books, name='book-list'),
     path('libraries/<int:pk>/', LibraryDetailView.as_view(), name='library-detail'),
 ]
