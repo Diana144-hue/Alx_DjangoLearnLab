@@ -1,16 +1,31 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book
 from .serializers import BookSerializer
 
-# List all books — allows unauthenticated read
+from django_filters.rest_framework import DjangoFilterBackend
+
+
+# BookListView with filtering, searching, and ordering capabilities
 class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]  # Public access
+    permission_classes = [permissions.AllowAny]
+
+    # Enable filtering, searching, and ordering
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    
+    # Allow filtering by these fields
+    filterset_fields = ['title', 'author', 'publication_year']
+    
+    # Allow searching by title and author name
+    search_fields = ['title', 'author__name']
+    
+    # Allow ordering by these fields
+    ordering_fields = ['title', 'publication_year']
 
 # Retrieve a single book by ID — allows unauthenticated read
 class BookDetailView(generics.RetrieveAPIView):
