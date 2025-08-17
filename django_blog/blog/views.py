@@ -12,6 +12,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 
 from .models import Comment, Post
+from django.db.models import Q
+from taggit.models import Tag
 from .forms import CommentForm
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -134,3 +136,17 @@ def posts_by_tag(request, tag_name):
     tag = get_object_or_404(Tag, name=tag_name)
     posts = Post.objects.filter(tags__name__in=[tag_name])
     return render(request, 'blog/posts_by_tag.html', {'posts': posts, 'tag': tag})
+
+class PostByTagListView(ListView):
+    model = Post
+    template_name = 'blog/posts_by_tag.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        self.tag = get_object_or_404(Tag, slug=self.kwargs.get('tag_slug'))
+        return Post.objects.filter(tags__slug=self.tag.slug).order_by('-published_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.tag
+        return context
