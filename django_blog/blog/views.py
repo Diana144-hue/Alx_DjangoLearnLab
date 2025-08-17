@@ -52,6 +52,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == comment.author
 
 class PostListView(ListView):
+    posts = Post.objects.all().order_by('-published_date')
     model = Post
     template_name = 'blog/post_list.html'  # Default: <app>/<model>_list.html
     context_object_name = 'posts'
@@ -60,6 +61,7 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -111,3 +113,24 @@ def profile_view(request):
         request.user.save()
         return redirect('profile')
     return render(request, 'blog/profile.html', {'user': request.user})
+
+
+
+
+def post_search(request):
+    query = request.GET.get('q')
+    posts = Post.objects.all()
+
+    if query:
+        posts = posts.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct()
+
+    return render(request, 'blog/search_results.html', {'posts': posts, 'query': query})
+
+def posts_by_tag(request, tag_name):
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = Post.objects.filter(tags__name__in=[tag_name])
+    return render(request, 'blog/posts_by_tag.html', {'posts': posts, 'tag': tag})
